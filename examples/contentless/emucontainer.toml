@@ -1,0 +1,23 @@
+schema_version = 1
+id = "org.emucontainer.smoke-test"
+title = "EmuContainer Smoke Test"
+system = "contentless"
+targets = ["linux-x86_64", "windows-x86_64"]
+
+[runner]
+kind = "libretro"
+frontend = "retroarch"
+core = "2048"
+
+[content]
+mode = "contentless"
+
+[permissions]
+display = true
+audio = true
+gpu = true
+input = true
+network = false
+
+[presentation]
+fullscreen = true
