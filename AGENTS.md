@@ -37,7 +37,7 @@ Treat compiler and linter warnings as errors. After removing or replacing behavi
 - Put platform-neutral behavior in reusable shared code; isolate operating-system packaging details in target adapters.
 - Prefer declarative package recipes and shared planning logic over duplicated target scripts.
 - Keep mutable player state separate from immutable package payloads.
-- Default permissions to the least capability required, with network access disabled unless explicitly justified.
+- State effective capabilities honestly. The v1 Windows runtime is not a sandbox and cannot enforce network denial; future isolation work should default to the least capability required.
 - Add dependencies only when they provide clear value that cannot be served by existing code or the standard library.
 - Update user and developer documentation whenever behavior or workflows change.
 

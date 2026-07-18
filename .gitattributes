@@ -10,5 +10,6 @@
 *.ico binary
 *.icns binary
 *.rom binary
+*.emuc binary
 *.bin binary
 *.iso binary

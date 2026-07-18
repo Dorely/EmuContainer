@@ -1,3 +1,6 @@
-pub mod manifest;
+pub mod image;
+pub mod path_policy;
+pub mod recipe;
+pub mod runtime;
 
-pub use manifest::{ContentMode, Manifest, ManifestError, RunnerKind, Target};
+pub use recipe::{Recipe, RecipeError, Target};

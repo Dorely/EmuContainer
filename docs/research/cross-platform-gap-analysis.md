@@ -1,5 +1,7 @@
 # GameImage Cross-Platform Gap Analysis
 
+> **Historical research:** This document predates and is superseded by the Runtime+Image v1 architecture in [`VISION.md`](../../VISION.md) and [`docs/mvp.md`](../mvp.md). Its recommendations are retained only as decision history.
+
 Research snapshot: 2026-07-17
 
 ## Conclusion

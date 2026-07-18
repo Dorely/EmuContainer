@@ -1,5 +1,7 @@
 # Technology Assessment
 
+> **Historical research:** This document predates and is superseded by the Runtime+Image v1 architecture in [`VISION.md`](../../VISION.md) and [`docs/mvp.md`](../mvp.md). Its recommendations are retained only as decision history.
+
 Research snapshot: 2026-07-17
 
 This document compares Linux runtime and packaging technologies. It does not claim that the winning Linux artifact runs natively on other operating systems. The separate [GameImage cross-platform gap analysis](cross-platform-gap-analysis.md) maps the Windows, macOS, Android, and web backends.

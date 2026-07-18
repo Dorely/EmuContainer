@@ -1,0 +1,28 @@
+schema_version = 2
+id = "local.pokemon-blue"
+title = "Pokemon Blue"
+system = "gb"
+target = "windows-x86_64"
+
+[emulator]
+id = "mgba"
+version = "0.10.5"
+source = "https://github.com/mgba-emu/mgba/releases/tag/0.10.5"
+entrypoint = "mgba-sdl.exe"
+working_directory = "."
+arguments = [
+    "-f",
+    "-C",
+    "savegamePath={state}/saves",
+    "-C",
+    "savestatePath={state}/states",
+    "{rom}",
+]
+
+[content]
+filename = "pokemon-blue.gb"
+sha256 = "2a951313c2640e8c2cb21f25d1db019ae6245d9c7121f754fa61afd7bee6452d"
+
+[[notices]]
+source = "LICENSE.txt"
+output = "mgba-LICENSE.txt"

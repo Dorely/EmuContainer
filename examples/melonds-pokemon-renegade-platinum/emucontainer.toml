@@ -1,0 +1,26 @@
+schema_version = 2
+id = "local.pokemon-renegade-platinum"
+title = "Pokemon Renegade Platinum"
+system = "nds"
+target = "windows-x86_64"
+
+[emulator]
+id = "melonds"
+version = "1.1"
+source = "https://github.com/melonDS-emu/melonDS/releases/tag/1.1"
+entrypoint = "melonDS.exe"
+working_directory = "."
+arguments = ["--fullscreen", "--boot", "auto", "{rom}"]
+
+[content]
+filename = "pokemon-renegade-platinum.nds"
+sha256 = "f11e52b42a76dcbe968a733d28d8dd4dedf7161ae21fc499e2738c3dc0475bb8"
+
+[[notices]]
+source = "LICENSE"
+output = "melonDS-GPL-3.0.txt"
+
+[[state.mounts]]
+name = "user-data"
+target = "portable"
+seed = "if-empty"

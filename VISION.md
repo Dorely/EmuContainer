@@ -1,61 +1,69 @@
 # EmuContainer Vision
 
-## The idea
+## The product
 
-EmuContainer will explore whether emulators and their games can be packaged as self-contained, easily launched units.
+EmuContainer turns a portable emulator, one game, and their launch configuration into one movable game image. A player opens that image and goes directly into the game without separately installing or configuring the emulator.
 
-The goal is larger than simply running an emulator inside a container. It is to turn an emulated game into a dependable, portable, console-like experience.
+The v1 experience is deliberately concrete:
 
-The experience we are working toward is simple:
+> Build one `.emuc` file, move that file to another Windows x64 machine with the EmuContainer runtime installed, and launch the same preconfigured game while keeping player state outside the image.
 
-> A player selects a game from a controller-first interface. The game opens fullscreen with the correct emulator, settings, controls, audio, and video. Saves persist automatically. When the player exits, they return cleanly to the interface. The experience behaves the same on every supported machine.
+The `.emuc` file is the complete per-game transport artifact. It contains the emulator folder, ROM, configuration, metadata, integrity hashes, provenance, and notices. The installed runtime verifies and materializes the image, creates a writable game instance, connects persistent state, launches the emulator directly, and supervises its process tree.
 
 ## Why this project exists
 
-Today, emulation often requires users to install an emulator, organize game files, select cores or plugins, configure controllers, tune graphics settings, and troubleshoot differences between machines. Existing gaming-focused Linux distributions improve this experience, but games generally remain dependent on a larger, carefully configured system.
+Emulation commonly asks players to install an emulator, organize game files, choose plugins, configure paths and controllers, and reproduce those choices on every machine. Frontends improve discovery but usually still depend on a separately maintained emulator installation and ROM library.
 
-EmuContainer aims to move more of that configuration into a portable package. A package would describe or contain everything needed to launch a particular game: the emulator, its version, required configuration, controller mappings, display behavior, metadata, and any permitted supporting files. Game content could be supplied separately when licensing prevents it from being distributed.
+EmuContainer moves that setup into an inspectable per-game image. The player receives one file and the host receives one shared runtime. The source emulator folder and ROM are build inputs only; neither is needed after the image is built.
 
-The player should not need to understand the package's internals. From Steam Big Picture, a controller-first launcher, a desktop shortcut, or a command line, launching the package should feel like launching an ordinary game.
+This resembles Docker's image/runtime split without claiming Docker's security boundary:
 
-## Project priorities
+- A `.emuc` image is immutable, content-addressed, inspectable, and movable.
+- The runtime maintains disposable verified caches and writable instances.
+- Saves and emulator-specific mutable data live in stable per-game state or named volumes.
+- Explicit lifecycle commands install the runtime, report status, prune disposable data, and uninstall it.
 
-EmuContainer will prioritize:
+## v1 priorities
 
-- A controller-first, console-like experience.
-- Repeatable behavior across supported computers.
-- Simple launching and clean shutdown.
-- Working graphics, audio, controllers, and fullscreen display.
-- Persistent save data kept separate from the disposable runtime.
-- Isolation between games so one game's configuration cannot break another.
-- Clear handling of user-supplied ROMs, BIOS files, and other legally restricted assets.
-- Packages that can be inspected, versioned, backed up, and moved.
-- Compatibility with existing frontends rather than requiring a new frontend immediately.
+EmuContainer v1 prioritizes:
 
-## Initial boundaries
+- One distributable `.emuc` file per game.
+- Windows 10/11 x64 and portable Windows x64 emulator folders.
+- Deterministic builds from declared inputs.
+- Complete image verification before executing packaged code.
+- Direct fullscreen launch with ordered arguments and no intermediary shell.
+- Generic emulator support through declarative entrypoints, arguments, environment, and persistent mounts.
+- Battery saves, save states, and mutable emulator data that survive cache pruning and image replacement.
+- Clean process-tree supervision and actionable machine-readable logs.
+- User-scoped installation and `.emuc` file association without administrator rights.
+- Agent-operable build and runtime diagnostics.
 
-Initially, EmuContainer does not need to:
+## Trust and isolation boundary
 
-- Replace established emulators or gaming frontends.
-- Distribute copyrighted games, firmware, or BIOS files.
-- Support every emulator, operating system, and graphics platform.
-- Guarantee that each package is literally a single native executable.
-- Hide all host dependencies at the expense of performance or reliability.
+A `.emuc` file contains native executable code and must be trusted like an unsigned executable. Its inventory and hashes prove internal consistency and detect accidental or naive corruption; without an externally trusted digest or signature, they do not prove who built it or rule out deliberate replacement of both payload and metadata.
+
+v1 is not a sandbox. The emulator runs with the invoking user's normal access to files, devices, the registry, and the network. `isolation = "none"` and `network_enforced = false` are recorded in every image so inspection cannot imply otherwise. Per-game directories prevent ordinary configuration collisions, but they are an organization and lifecycle boundary rather than a security boundary.
+
+## Content and distribution boundary
+
+EmuContainer does not grant rights to distribute games, firmware, BIOS files, emulators, or artwork. Builders are responsible for every input's license. Personal ROMs and resulting images remain ignored local fixtures and must not enter version control or be published without explicit redistribution permission.
+
+Notices and provenance travel inside the image. No host source path, private build path, or undeclared file may be embedded in its metadata.
 
 ## First meaningful success
 
-The first meaningful success will be a Linux-based proof of concept in which one legally distributable or user-supplied game:
+The v1 proof of concept succeeds when the same generic runtime can:
 
-- Can be launched from a controller-friendly interface.
-- Uses hardware-accelerated graphics and a gamepad.
-- Stores saves outside its runtime.
-- Shuts down cleanly and reliably returns the player to the interface.
-- Behaves consistently when moved between supported machines.
+- Build several mGBA images and at least one melonDS image from private ignored fixtures.
+- Produce byte-identical images from identical inputs.
+- Inspect and reject a corrupted image before launching a process.
+- Cold-launch a moved image after its source inputs and prior cache are unavailable.
+- Launch directly into each game with working graphics, audio, fullscreen, and controller input.
+- Preserve independent battery saves and save states across cache pruning and compatible emulator-version updates.
+- Refuse state reuse when a game ID is paired with a different ROM or emulator identity.
+- Terminate and account for the complete emulator process tree.
+- Install, associate, prune, uninstall, and reinstall the runtime without deleting player state.
 
-## Product direction
+## Deferred direction
 
-The initial unit of packaging will be one playable game per launchable unit, even if several units share the same emulator layers internally. This most closely matches the experience of selecting and launching a game like a native executable.
-
-"Container" is a possible mechanism, not the product promise. GPU access, display systems, audio, controllers, low-latency input, and platform-specific drivers all cross container boundaries. The eventual package may use an OCI container with a host launcher, an AppImage-style bundle, Flatpak, or a hybrid approach.
-
-EmuContainer commits to the portable, repeatable player experience while leaving room to discover the right technical machinery.
+Linux, macOS, ARM, OCI compatibility, production signing, stronger isolation, network enforcement, shared layers, delta updates, multi-file disc images, BIOS management, automatic emulator acquisition, and a polished GUI launcher are later decisions. The historical GameImage, FlatImage, libretro, and MSIX research remains useful context, but it does not define the v1 architecture.

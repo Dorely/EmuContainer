@@ -1,59 +1,90 @@
-# Windows and Linux MVP
+# Windows Runtime and Single-File Image v1
 
 ## Goal
 
-Build one legally redistributable retro game from one EmuContainer recipe into:
+Build one deterministic `.emuc` file from a schema-v2 recipe, a clean portable Windows x64 emulator folder, and one ROM. On Windows 10/11 x64, a shared user-scoped EmuContainer runtime must open that image and launch directly into the game without access to the original build inputs.
 
-- A Linux x86-64 GameImage/FlatImage.
-- A native Windows x64 MSIX.
+The v1 proof uses four private, ignored ROM fixtures:
 
-Each artifact will include the appropriate native RetroArch frontend, one pinned libretro core, the game configuration, and the game ROM when its license permits redistribution. The two artifacts are not expected to be byte-identical; they are expected to implement the same declared behavior.
+- Pokémon Blue, Crystal, and Emerald through mGBA 0.10.5.
+- Pokémon Renegade Platinum through melonDS 1.1.
 
-## Acceptance criteria
+The matrix demonstrates multiple content formats and sizes plus two unrelated standalone emulators. It does not authorize redistribution of those ROMs or generated images.
 
-Record these behaviors through the applicable scenarios in [the agent-operable manual test plan](manual-test-plan.md).
+## Architecture acceptance
 
-Both packages must:
+The implementation has two deliverables:
 
-- Launch directly into the game from a normal application shortcut.
-- Start fullscreen without presenting emulator setup UI.
-- Use native hardware-accelerated video and synchronized audio.
-- Accept a controller at launch.
-- Keep battery saves and other mutable state outside the immutable package payload.
-- Retain saves when the application package is replaced.
-- Exit fully and return control to the calling launcher.
-- Run with network access disabled.
-- Report a useful error when a required runtime capability or content file is unavailable.
-- Identify the exact frontend, core, content, and build-tool revisions used.
+1. A single per-game `.emuc` transport artifact containing the emulator folder, ROM, launch configuration, inventory, hashes, provenance, and notices.
+2. One installed runtime that verifies and materializes images, maintains disposable writable instances, attaches stable state, supervises the process tree, and manages user-scoped file association.
 
-## Milestones
+Arbitrary Windows executables and DLLs require filesystem paths. The runtime may therefore materialize a verified image under `%LOCALAPPDATA%`; "single file" describes distribution, not in-memory execution.
 
-- [x] Initialize local Git, the toolchain, manifest model, agent-operable manual test plan, and Windows/Linux development scripts.
-- [ ] Select a small redistributable ROM and retain its license text and SHA-256 checksum.
-- [ ] Pin a RetroArch revision and one core revision for both targets.
-- [ ] Define the component lock file and acquisition cache.
-- [ ] Assemble and launch the unpackaged reference payload on Windows and Linux.
-- [ ] Generate the Linux GameImage through a noninteractive adapter.
-- [ ] Generate and sign a development Windows MSIX.
-- [ ] Run the shared manual behavior checklist on both native operating systems.
-- [ ] Record package size, cold-start time, controller behavior, audio observations, and save migration behavior.
+## Acceptance gates
 
-## First content sequence
+Record each gate through [the manual test plan](manual-test-plan.md).
 
-Use the contentless `2048` libretro core only as an early plumbing test. It does not satisfy the ROM-based MVP.
+### Build and image contract
 
-For the real MVP, select a small homebrew ROM whose exact binary and accompanying assets are explicitly redistributable. Prefer a simple cartridge platform that needs no BIOS and a core available on both Windows and Linux. Record the source URL, license, attribution requirements, and SHA-256 hash before adding the binary.
+- Both checked-in schema-v2 recipes validate and the removed schema-v1 contentless recipe is no longer accepted or documented as current behavior.
+- Recipe mode and the equivalent all-flags mode build valid images.
+- Identical tool and input bytes produce byte-identical `.emuc` files.
+- The image contains exactly the declared emulator, ROM, notices, metadata, and sorted inventory without host source paths.
+- The builder rejects a wrong ROM hash, unsafe Windows path, reparse point, case collision, ROM nested inside the emulator tree, and overwrite without `--force`.
+- Inspection verifies the complete archive and rejects a corrupted or undeclared entry before any packaged process starts.
+
+### Runtime behavior
+
+- A moved image cold-launches after its source emulator/ROM tree is unavailable and prior cache and instance data have been pruned.
+- Each image starts directly into its game using declarative arguments; no emulator-specific Rust adapter or shell command is involved.
+- mGBA state tokens and the melonDS junction-backed `portable` volume persist independently across launches and pruning.
+- A compatible emulator-version update for the same game, system, ROM hash, and emulator ID reuses state.
+- A reused game ID with a different ROM hash, system, or emulator ID is rejected before state is mounted.
+- Only one launch per game ID is allowed at a time.
+- Structured logs identify verification, paths, mounts, expanded launch data, PID, root exit code, and process-tree completion.
+- The runtime's Job Object closes the complete emulator process tree when the runtime terminates unexpectedly.
+
+### Player experience
+
+- All four images launch fullscreen directly into the expected game.
+- Graphics and synchronized audio work on native Windows.
+- An XInput controller works at minimum with Pokémon Emerald.
+- Battery saves and save states can be created, hashed, pruned around, and loaded again.
+- Exiting the emulator returns cleanly to the invoking terminal or shell.
+
+Graphics, audio, fullscreen, physical controller use, and recognizing the loaded save are explicitly human-observed. Process state, logs, hashes, state changes, cache layout, junctions, and exit codes remain agent-verifiable.
+
+### Installation and lifecycle
+
+- `runtime install` installs without elevation and registers `.emuc` under HKCU.
+- The same image launches from the CLI and by file association.
+- `runtime status` verifies the installed binary and association.
+- `runtime prune` removes only inactive caches and instances.
+- `runtime uninstall` removes the owned runtime and association but preserves game identity, state, volumes, and logs.
+- Reinstalling the runtime can launch the prior image and load its saved state.
+
+## Milestone sequence
+
+1. Stage and hash private ignored ROMs plus clean official emulator folders.
+2. Replace the schema-v1 libretro contract with the strict schema-v2 portable-emulator recipe.
+3. Deliver deterministic image build, complete inspection, and safe path policy.
+4. Deliver verified materialization, writable instances, identity guards, stable state, logging, locking, and process supervision.
+5. Deliver user-scoped install, status, prune, uninstall, and `.emuc` association.
+6. Build and launch the four-image emulator-neutral matrix.
+7. Run locked local checks and record the applicable manual evidence.
+
+## Go/no-go decision
+
+v1 is successful when one generic runtime launches all four images and each image remains self-contained after being moved away from its unavailable inputs. If supporting melonDS requires emulator-specific runtime code rather than declarative configuration and a generic persistent mount, revise the runtime contract before adding more emulators.
 
 ## Explicitly deferred
 
-- Automated regression suites, test harnesses, coverage systems, and continuous integration until a working product exists.
-- macOS, Android, web, and ARM64 artifacts.
-- A new game-library frontend.
-- Standalone emulators outside libretro.
-- Online play, achievements, cloud saves, and automatic updates.
-- Production signing and store publication.
-- Shared runtime deduplication across multiple installed games.
-
-## Go/no-go check
-
-The cross-platform design is validated when one manifest can produce both native packages without including Windows- or Linux-specific shell commands in the game recipe. If the recipe devolves into unrelated target scripts, revise the package contract before adding more platforms.
+- Automated test suites, test harnesses, coverage, and continuous integration.
+- Linux, macOS, ARM64, Android, web, and OCI runtimes.
+- Sandboxing or enforced network denial.
+- Production code signing, a polished installer, and a GUI-subsystem launcher.
+- Automatic emulator or ROM acquisition.
+- Shared layers, delta updates, and runtime deduplication.
+- BIOS management and multi-file/CUE-BIN disc content.
+- Save migration between different emulator IDs.
+- A new game-library frontend, cloud saves, achievements, netplay, and automatic updates.

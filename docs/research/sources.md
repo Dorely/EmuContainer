@@ -1,5 +1,7 @@
 # Sources
 
+> **Historical research:** This document predates and is superseded by the Runtime+Image v1 architecture in [`VISION.md`](../../VISION.md) and [`docs/mvp.md`](../mvp.md). Its recommendations are retained only as decision history.
+
 Sources accessed 2026-07-17. Primary project documentation and source repositories were preferred for technical claims.
 
 ## Direct and adjacent projects

@@ -1,74 +1,92 @@
 # EmuContainer
 
-EmuContainer is an experiment in turning an emulator, one game, and their required configuration into a dependable application-like package.
-
-The first product goal is deliberately concrete:
-
-> One legally redistributable retro game should build from one recipe into a native Linux x86-64 package and a native Windows x64 package. Both should launch directly into the game, work with a controller, keep saves outside the immutable payload, and exit cleanly.
-
-GameImage/FlatImage will supply the Linux packaging runtime. Windows will receive a native RetroArch/libretro payload in an MSIX. EmuContainer's job is the shared recipe, build orchestration, state and permission contract, and cross-platform behavior definition.
-
-## Current status
-
-The development foundation is in place:
-
-- A pinned Rust toolchain.
-- A cross-platform command-line application.
-- A versioned TOML package manifest with structural validation.
-- A contentless libretro example used only to test plumbing.
-- Local Windows and Linux bootstrap, quality, and build scripts.
-- An agent-operable manual test plan for current and planned behavior.
-
-The actual emulator assembly and package backends are the next implementation phase. No copyrighted ROMs, firmware, or BIOS files belong in this repository.
-
-## Quick start
-
-Install [rustup](https://rustup.rs/). On Windows PowerShell, run:
+EmuContainer packages a portable Windows emulator, one ROM, and their launch configuration into one distributable `.emuc` game image. A shared user-scoped runtime verifies the image, materializes a writable instance, attaches persistent state, and launches directly into the game.
 
 ```text
+recipe + emulator folder + ROM
+              |
+      emucontainer build
+              v
+         one GAME.emuc
+              |
+   installed EmuContainer runtime
+              v
+          the game
+```
+
+The source emulator folder and ROM are not needed after a successful build. Runtime caches and instances may contain extracted files under `%LOCALAPPDATA%`, but the only per-game file that must be transported is the `.emuc` image.
+
+## Security and content warning
+
+A `.emuc` image contains native executable code. Treat an unsigned image exactly as you would an unsigned `.exe`: its internal hashes detect accidental corruption, but only a separately trusted digest or signature could prove publisher identity or deliberate replacement.
+
+v1 is not a sandbox and does not disable networking. Packaged emulators run with the invoking user's normal permissions. Per-game state directories provide lifecycle and configuration isolation, not a security boundary.
+
+Do not commit or publish personal ROMs, BIOS files, firmware, emulator archives, extracted emulator folders, generated `.emuc` files, or saves. Local fixtures belong under the already ignored `.emucontainer/` directory.
+
+## v1 commands
+
+Validate either checked-in schema-v2 example:
+
+```powershell
+cargo run --locked -- validate examples/mgba-pokemon-blue/emucontainer.toml
+cargo run --locked -- validate examples/melonds-pokemon-renegade-platinum/emucontainer.toml
+```
+
+Build and inspect an image with private local inputs:
+
+```powershell
+$Cli = '.\target\debug\emucontainer.exe'
+New-Item -ItemType Directory -Force -Path .emucontainer\artifacts | Out-Null
+& $Cli build `
+  --recipe examples/mgba-pokemon-blue/emucontainer.toml `
+  --emulator-root .emucontainer/test-inputs/emulators/mgba-0.10.5/mGBA-0.10.5-win64 `
+  --rom .emucontainer/test-inputs/roms/gb/pokemon-blue.gb `
+  --output .emucontainer/artifacts/pokemon-blue.emuc
+& $Cli inspect .emucontainer/artifacts/pokemon-blue.emuc --json
+# Interactive: this opens the emulator window. Do not run it unattended.
+& $Cli run .emucontainer/artifacts/pokemon-blue.emuc
+```
+
+Manage the user-scoped runtime:
+
+```powershell
+& $Cli runtime install
+& $Cli runtime status --json
+& $Cli runtime prune --json
+& $Cli runtime uninstall
+```
+
+See the [manual test plan](docs/manual-test-plan.md) for fixture intake, the four-image validation matrix, integrity rejection, launch, persistence, isolation, and lifecycle scenarios.
+
+## Development
+
+Install [rustup](https://rustup.rs/), then run the local checks:
+
+```powershell
 .\scripts\bootstrap.ps1
 .\scripts\check.ps1
 ```
 
-On Linux, run:
-
-```text
+```sh
 ./scripts/bootstrap.sh
 ./scripts/check.sh
 ```
 
-The local check scripts run the equivalent of:
+The check scripts verify formatting, run Clippy with warnings denied, and perform a locked build. Automated test suites and CI are intentionally deferred until the working product needs regression protection.
 
-```text
-cargo fmt --all --check
-cargo clippy --all-targets --all-features --locked -- -D warnings
-cargo build --locked
-```
-
-The checked-in `rust-toolchain.toml` selects the project's Rust version automatically. Run the functional scenarios in [the manual test plan](docs/manual-test-plan.md), including manifest validation, when the affected behavior requires them.
+The v1 runtime is Windows 10/11 x64 only. Recipe validation, image building, and image inspection are platform-neutral; runtime launch and installation report unsupported on other platforms.
 
 ## Repository map
 
 ```text
-src/                    CLI and shared package-contract code
-examples/               package-recipe examples with legally clean inputs
-docs/mvp.md             first Windows/Linux milestone and acceptance criteria
-docs/development.md     developer workflow and architecture boundaries
-docs/manual-test-plan.md agent-operable functional verification scenarios
-docs/research/          feasibility and technology research
-scripts/                local Windows and Linux setup and verification
+src/                     CLI, recipe/image logic, and Windows runtime
+examples/                metadata-only schema-v2 recipes
+docs/mvp.md              v1 outcome and acceptance gates
+docs/development.md      contracts, architecture, and local workflow
+docs/manual-test-plan.md exact agent-operable validation scenarios
+docs/research/           historical feasibility research
+scripts/                 local bootstrap and quality checks
 ```
 
-Agents begin every session with the [project vision](VISION.md) and canonical [file map](FILEMAP.md). Then read the [MVP](docs/mvp.md), [development guide](docs/development.md), and [cross-platform research](docs/research/cross-platform-gap-analysis.md) as relevant.
-
-## Project rules
-
-- A game recipe must remain platform-neutral. Platform-specific work belongs in a backend adapter.
-- Network access defaults to disabled.
-- Saves and other player state remain separate from immutable application files.
-- Emulator, core, tool, and content versions will be pinned by hashes before producing distributable artifacts.
-- ROMs, BIOS files, firmware, artwork, and other game data may be committed only when their exact redistribution terms have been verified and recorded.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). The project license has not yet been selected; do not assume that repository access grants redistribution rights beyond those provided by applicable law.
+Every agent session starts by reading [VISION.md](VISION.md) and the canonical [FILEMAP.md](FILEMAP.md). Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md).
