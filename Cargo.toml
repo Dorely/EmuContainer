@@ -5,6 +5,8 @@ edition = "2024"
 rust-version = "1.97.1"
 description = "Build and run self-contained emulator and ROM images"
 repository = "https://github.com/Dorely/EmuContainer"
+license = "MIT"
+readme = "README.md"
 publish = false
 
 [dependencies]

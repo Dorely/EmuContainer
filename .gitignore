@@ -2,6 +2,18 @@
 /dist/
 /.emucontainer/
 
+# Private game payloads and player state, even outside the local workspace.
+*.emuc
+*.rom
+*.gb
+*.gbc
+*.gba
+*.nds
+*.iso
+*.sav
+*.srm
+*.state
+
 .env
 .env.*
 !.env.example

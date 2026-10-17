@@ -8,7 +8,7 @@ Every repository file must appear exactly once. Agents must update this map in t
 
 | File | Purpose | Function | Related features |
 | --- | --- | --- | --- |
-| `README.md` | Project entry point | Introduces the Runtime+Image model, trust boundary, CLI workflow, storage layout, and repository navigation. | User onboarding; `.emuc` images; Windows runtime |
+| `README.md` | Public project entry point | Explains project status, prerequisites, source setup, Runtime+Image workflows, storage, feedback, licensing, and funding. | User onboarding; `.emuc` images; Windows runtime; sharing |
 | `VISION.md` | Product vision and boundaries | Defines the Docker-like image/runtime experience, immutable and persistent layers, v1 limits, and success criteria. | Product direction; portability; player state |
 | `docs/mvp.md` | v1 proof-of-concept contract | Fixes the recipe, image, runtime, lifecycle, verification, and explicit deferral scope for the first usable release. | Schema v2; deterministic images; Windows x64 |
 
@@ -16,8 +16,10 @@ Every repository file must appear exactly once. Agents must update this map in t
 
 | File | Purpose | Function | Related features |
 | --- | --- | --- | --- |
-| `AGENTS.md` | Repository-wide agent policy | Requires startup context reads, search and reuse, dead-code removal, documentation synchronization, and manual evidence. | Agentic development; maintainability; verification |
+| `AGENTS.md` | Repository-wide agent policy | Requires startup context reads, search and reuse, dead-code removal, documentation synchronization, manual evidence, and committing and pushing completed changes. | Agentic development; maintainability; verification; delivery |
 | `CONTRIBUTING.md` | Contributor handoff guide | Documents supported scope, private-input handling, local quality gates, manual checks, and file-map discipline. | Development workflow; ROM hygiene; review |
+| `LICENSE` | Project license | Grants MIT permissions and states copyright, conditions, and warranty disclaimer. | Public distribution; contribution terms |
+| `.github/FUNDING.yml` | GitHub funding configuration | Connects the repository Sponsor button to Dorely's Buy Me a Coffee page. | Optional project support |
 | `FILEMAP.md` | Canonical tracked-file inventory | Describes every version-controlled file once and records feature ownership and relationships. | Repository navigation; change integrity |
 
 ## Rust package and command-line surface
@@ -68,9 +70,9 @@ Every repository file must appear exactly once. Agents must update this map in t
 | --- | --- | --- | --- |
 | `.editorconfig` | Shared editor defaults | Standardizes UTF-8, indentation, line endings, final newlines, and whitespace handling. | Maintainability; cross-platform editing |
 | `.gitattributes` | Git content rules | Normalizes text, preserves script line endings, and marks selected image/media artifact extensions as binary. | Artifact hygiene; cross-platform diffs |
-| `.gitignore` | Repository exclusions | Keeps target output and the single `.emucontainer/` private workspace out of version control. | ROM privacy; generated images; runtime evidence |
+| `.gitignore` | Repository exclusions | Excludes build output, the private workspace, common game payloads and saves, local settings, and credentials. | ROM privacy; generated images; runtime evidence |
 | `docs/development.md` | Architecture and developer guide | Explains module ownership, data flow, path and integrity invariants, commands, and supported platform behavior. | Implementation maintenance; local workflow |
-| `docs/manual-test-plan.md` | Manual verification specification | Defines MT-010 through MT-180 commands and evidence fields for fixtures, builds, rejection, runtime, persistence, and lifecycle. | Agent-operable evidence; human observation boundaries |
+| `docs/manual-test-plan.md` | Manual verification specification | Defines MT-010 through MT-180 scenarios and evidence fields for public sharing, fixtures, builds, rejection, runtime, persistence, and lifecycle. | Agent-operable evidence; human observation boundaries |
 | `rustfmt.toml` | Rust formatting policy | Selects Edition 2024 formatting semantics and consistent line endings. | Code style; clean diffs |
 | `rust-toolchain.toml` | Pinned Rust toolchain | Selects Rust 1.97.1 with rustfmt and Clippy. | Reproducible development; linting |
 | `scripts/bootstrap.ps1` | Windows bootstrap | Installs the pinned toolchain components and fetches locked dependencies from PowerShell. | Windows setup; dependency cache |

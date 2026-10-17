@@ -1,5 +1,11 @@
 # Contributing to EmuContainer
 
+## Issues and pull requests
+
+Use [GitHub issues](https://github.com/Dorely/EmuContainer/issues) for reproducible bugs and scoped feature proposals. Include the CLI and emulator versions, operating system, expected and actual behavior, exact commands, and sanitized diagnostics. Never upload private inputs or generated game images; remove personal paths and credentials from logs before sharing.
+
+For a pull request, describe the resulting behavior and include the relevant local-check and manual-scenario evidence below. Contributions are under the repository's [MIT License](LICENSE).
+
 ## Start with repository truth
 
 At the beginning of every agent session:
@@ -71,6 +77,8 @@ Run every applicable scenario in [docs/manual-test-plan.md](docs/manual-test-pla
 - Treat compiler and linter warnings as errors and remove dead code immediately.
 
 ## Handoff evidence
+
+Agents must commit and push each completed, validated change before handing off, following [AGENTS.md](AGENTS.md#commit-and-push-every-completed-change), unless the user explicitly requests otherwise. Include the commit hash, destination branch, and push result in the handoff.
 
 Report:
 

@@ -55,6 +55,12 @@ For graphics, audio, controller, fullscreen, and launcher behavior, expose every
 
 Record manual verification using the evidence format in `docs/manual-test-plan.md`.
 
+## Commit and push every completed change
+
+After completing and validating any agent changes, commit them and push the commit to the current branch's configured upstream before handing off. This is part of the task and does not require another confirmation unless the user explicitly asks to leave changes uncommitted or unpushed.
+
+Review the diff and stage only files belonging to the task. Preserve unrelated user changes, keep private fixtures and credentials excluded, and do not commit while `FILEMAP.md` is stale. Use a descriptive commit message. If the branch has no upstream, push it to `origin` with upstream tracking. Never force-push or overwrite remote work to satisfy this requirement; if a push is blocked, retain the local commit and report the blocker. Verify the push succeeded and report the commit hash and destination branch in the final handoff.
+
 ## Required change sequence
 
 1. Read `VISION.md` and `FILEMAP.md` at session start.
@@ -63,4 +69,6 @@ Record manual verification using the evidence format in `docs/manual-test-plan.m
 4. Remove all behavior and references made obsolete by the change.
 5. Update documentation and manual verification scenarios.
 6. Synchronize `FILEMAP.md` with the final file inventory.
-7. Run the relevant local build and manual checks, then report concrete evidence.
+7. Run the relevant local build and manual checks.
+8. Review and commit the completed changes, then push and verify the destination branch.
+9. Report concrete verification evidence, the commit hash, and push status.

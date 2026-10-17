@@ -91,6 +91,22 @@ Pass when both schema-v2 examples validate, the missing file exits nonzero with 
 
 ## Input and build scenarios
 
+### MT-030: Review the repository for public sharing
+
+Run the README source-setup commands and MT-020 without private inputs. Recipe validation must work without downloading games or launching an emulator. Confirm the README distinguishes this from building an image, which needs matching private inputs.
+
+```powershell
+git diff --check
+git ls-files
+git log --all --format= --name-only
+git check-ignore --no-index public-check.emuc public-check.gb public-check.gbc public-check.gba public-check.nds public-check.sav public-check.srm public-check.state .emucontainer/private-check.txt .env
+cargo metadata --no-deps --format-version 1 --locked
+```
+
+Pass when the candidate file inventory matches `FILEMAP.md` exactly once per file, MIT license text and Cargo metadata agree, all listed private sample paths are ignored, and tracked files plus available history contain no private payloads or credentials. Review history contents as well as filenames; ignore rules do not remove files from older commits. Record the refs and scan scope, and do not describe a pattern-based credential scan as a guarantee.
+
+Check the README's local links resolve and that its donation link and `.github/FUNDING.yml` both identify `dorely`. After pushing to the default branch, verify GitHub renders the README, detects the MIT license, and displays the Sponsor destination. Record that remote UI check separately if it has not yet been performed. No emulator launch or runtime installation is required for this scenario.
+
 ### MT-100: Stage private ROMs without tracking them
 
 Create only ignored destination directories, then copy the four authorized local fixtures:
